@@ -18,6 +18,7 @@ object PetTable : Table(name = "pet") {
     ): InsertStatement<Number> {
         return newSuspendedTransaction {
             addLogger(StdOutSqlLogger)
+            println("createPet using connection: ${connection.connection}")
             PetTable.insert {
                 it[this.id] = id
                 it[this.name] = name
@@ -30,6 +31,7 @@ object PetTable : Table(name = "pet") {
     ): String? {
         return newSuspendedTransaction {
             addLogger(StdOutSqlLogger)
+            println("findPetByID using connection: ${connection.connection}")
             PetTable.select { PetTable.id eq id }.map { it[PetTable.name] }.singleOrNull()
         }
     }
