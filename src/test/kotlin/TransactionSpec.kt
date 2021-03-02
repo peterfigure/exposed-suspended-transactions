@@ -34,13 +34,13 @@ class TransactionSpec: WordSpec({
     "suspend transactions" should {
         "work concurrently across scopes" {
             val datasource = buildDatasource(postgreSQLContainer)
-            TransactionManager.defaultDatabase = Database.connect(datasource)
+            TransactionManager.defaultDatabase = Database.connect(datasource, { println("getting connection $it") })
             transaction {
                 SchemaUtils.createSchema(Schema("test"))
                 SchemaUtils.createMissingTablesAndColumns(PetTable)
             }
-
-            repeat(100) {
+            println("done with DDL, starting test")
+            repeat(20) {
                 runBlocking {
                     val id = UUID.randomUUID()
                     GlobalScope.launch {
@@ -65,6 +65,7 @@ fun buildDatasource(postgresContainer: TestPostgresSQLContainer): HikariDataSour
     config.schema = "test"
     config.leakDetectionThreshold = 4000
     config.isAutoCommit = false
+    config.maximumPoolSize = 5
 
     return HikariDataSource(config)
 }
